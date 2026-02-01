@@ -1,0 +1,233 @@
+<html lang="ja">
+	<head>
+		<title>Infinitasプレイリザルト管理</title>
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+		<link rel="stylesheet" href="style.css">
+		<script type="text/javascript" src="init.js"></script>
+		<script type="text/javascript" src="dom.js"></script>
+		<script type="text/javascript" src="functions.js"></script>
+		<script type="text/javascript" src="storage.js"></script>
+		<script type="text/javascript" src="script.js"></script>
+	</head>
+	<body>
+		<!--spinner-->
+		<div id="spinner">
+			<section class="spinnerContainer">
+				<div class="spinner"></div>
+			</section>
+		</div>
+		<!--プレイリザルト入力フォーム-->
+		<div id="inputContainer">
+			<div><span id="TITLE"></span></div>
+			<div class="number" style="font-size:0.8em;">
+				<span id="SPDP" style="margin-right:0.4em;"></span>/
+				<span id="NOTES" style="margin-right:0.15em;"></span>NOTES
+			</div>
+			<div id="inputArea">
+				<table class="inputTable">
+					<thead>
+						<tr>
+							<th>解禁</th>
+							<th>クリア状況</th>
+							<th class="number">EX SCORE</th>
+							<th class="number">MISS COUNT</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<input type="checkbox" id="OPEN" onchange="openChange();"/><label for="OPEN" style="margin-left:1rem;"></label>
+							</td>
+							<td>
+								<select id="CLEARSTATUS" class="number" style="font-size:1.0em;">
+									<option value="NO PLAY">NO PLAY</option>
+									<option value="FAILED">FAILED</option>
+									<option value="ASSIST CLEAR">ASSIST CLEAR</option>
+									<option value="EASY CLEAR">EASY CLEAR</option>
+									<option value="CLEAR">CLEAR</option>
+									<option value="HARD CLEAR">HARD CLEAR</option>
+									<option value="EX HARD CLEAR">EX HARD CLEAR</option>
+									<option value="FULL COMBO">FULL COMBO</option>
+								</select>
+							</td>
+							<td style="width:18rem;">
+								<div style="display:flex;justify-content:center;">
+									<div style="margin-right:0.4em;">
+										<input type="number" class="number" id="EXSCORE" min="0" max="9999" style="font-size:0.95em;width:4em;text-align:right;padding-right:0.2em;" onkeydown="focusReset();" onchange="resetMinus();calcRate();"/>
+									</div>
+									<div style="display:flex;justify-content:flex-start;">
+										<div id="PLAYRESULT" style="width:2.4em;text-align:center;"></div>
+										<div id="DETAIL" class="number" style="width:5erm;margin-left:0.2em;">&nbsp;</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<input type="number" class="number" id="MISSCOUNT" min="0" max="9999" style="font-size:0.95em;width:4em;text-align:right;padding-right:0.2em;" onkeydown="focusReset();" onchange="resetMinus();"/>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div style="text-align:center;margin-top:0.8em;">
+				<button type="button" onclick="cancel();">キャンセル</button>
+				<button type="button" onclick="save();">更新</button>
+			</div>
+		</div>
+		<div id="rivalContainer">
+			<div style="margin-top:4px;border-bottom:2px solid gray;">ライバル管理</div>
+			<div id="rivals" style="height:9em;padding:1em;"></div>
+			<input type="text" id="rivalId">
+			<div style="margin-top:4px;margin-bottom:8px;">
+				<button type="button" onclick="addRival();">追加</button>
+				<button type="button" onclick="closeRival();">閉じる</button>
+			</div>
+		</div>
+		<div id="pkgContainer">
+			<div style="margin-top:4px;border-bottom:2px solid gray;">パッケージ管理</div>
+			<div id="pkgList" style="text-align:left;font-size:0.9em;padding-left:0.2em;height:20em;overflow-y:scroll;"></div>
+			<div style="border-top:2px solid gray;padding:0.2em;">
+				<button type="button" onclick="hide('pkgContainer');">閉じる</button>
+			</div>
+		</div>
+		<form>
+			<div style="position:sticky;top:0;padding-left:0.1em;">
+				<div style="padding-top:0.2em;display:flex;justify-content:flex-start;">
+					<div style="margin-right:0.2em;">
+						<select id="SPDPSel" class="number" name="SPDP" value="SP" onchange="search();" disabled="true">
+							<option value="SP">SP</option>
+							<option value="DP">DP</option>
+						</select>
+					</div>
+					<div style="margin-right:0.2em;">
+						<select id="LVSel" class="number" name="LV" value="1" onchange="clearFilter();search();" disabled="true">
+							<option value="1">LEVEL 1</option>
+							<option value="2">LEVEL 2</option>
+							<option value="3">LEVEL 3</option>
+							<option value="4">LEVEL 4</option>
+							<option value="5">LEVEL 5</option>
+							<option value="6">LEVEL 6</option>
+							<option value="7">LEVEL 7</option>
+							<option value="8">LEVEL 8</option>
+							<option value="9">LEVEL 9</option>
+							<option value="10">LEVEL 10</option>
+							<option value="11">LEVEL 11</option>
+							<option value="12">LEVEL 12</option>
+						</select>
+					</div>
+				</div>
+				<div>
+					<div>
+						<button type="button" id="rivalBtn" onclick="openRival();">ライバル管理</button>
+						<button type="button" id="pkgBtn" onclick="openPkg();">パッケージ管理</button>
+					</div>
+				</div>
+				<!--集計結果表示-->
+				<div id="summaryContainer">
+					<div>曲数<span id="total" class="number" style="margin-left:0.5em;padding-right:0.15em;"></span>曲</div>
+					<div id="rivalsWinLose"></div>
+					<div style="font-size:1em;padding-right:0.1em;">
+						<div style="display:flex;justify-content:space-between;">
+							<div onclick="filter('notOpenCnt', 'CLEARSTATUS', '未解禁');" style="cursor:pointer;">未解禁</div>
+							<div style="text-align:right;"><span id="notOpenCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="NO_PLAY number" onclick="filter('noPlayCnt', 'CLEARSTATUS', 'NO PLAY');" style="cursor:pointer;">NO PLAY</div>
+							<div style="text-align:right;"><span id="noPlayCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="FAILED number" onclick="filter('failedCnt', 'CLEARSTATUS', 'FAILED');" style="cursor:pointer;">FAILED</div>
+							<div style="text-align:right;"><span id="failedCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="ASSIST_CLEAR number" onclick="filter('assistClearCnt', 'CLEARSTATUS', 'ASSIST CLEAR');" style="cursor:pointer;">ASSIST CLEAR</div>
+							<div style="text-align:right;"><span id="assistClearCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="EASY_CLEAR number" onclick="filter('easyClearCnt', 'CLEARSTATUS', 'EASY CLEAR');" style="cursor:pointer;">EASY CLEAR</div>
+							<div style="text-align:right;"><span id="easyClearCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="CLEAR number" onclick="filter('clearCnt', 'CLEARSTATUS', 'CLEAR');" style="cursor:pointer;">CLEAR</div>
+							<div style="text-align:right;"><span id="clearCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="HARD_CLEAR number" onclick="filter('hardClearCnt', 'CLEARSTATUS', 'HARD CLEAR');" style="cursor:pointer;">HARD CLEAR</div>
+							<div style="text-align:right;"><span id="hardClearCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="EX_HARD_CLEAR number" onclick="filter('exhClearCnt', 'CLEARSTATUS', 'EX HARD CLEAR');" style="cursor:pointer;">EX HARD CLEAR</div>
+							<div style="text-align:right;"><span id="exhClearCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+						<div style="display:flex;justify-content:space-between;">
+							<div class="FULL_COMBO number" onclick="filter('fullComboCnt', 'CLEARSTATUS', 'FULL COMBO');" style="cursor:pointer;">FULL COMBO</div>
+							<div style="text-align:right;"><span id="fullComboCnt" class="number" style="padding-right:0.15em;"></span>曲</div>
+						</div>
+					</div>
+					<table style="width:100%;font-size:1em;">
+						<tr>
+							<td class="PLAYRESULT AAA" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('aaaCnt', 'PLAYRESULT', 'AAA');">AAA</td>
+							<td style="text-align:right;padding-right:0.5em;"><span id="aaaCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+							<td class="PLAYRESULT AA" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('aaCnt', 'PLAYRESULT', 'AA');">AA</td>
+							<td style="text-align:right;"><span id="aaCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+						</tr>
+						<tr>
+							<td class="PLAYRESULT A" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('aCnt', 'PLAYRESULT', 'A');">A</td>
+							<td style="text-align:right;padding-right:0.5em;"><span id="aCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+							<td class="PLAYRESULT B" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('bCnt', 'PLAYRESULT', 'B');">B</td>
+							<td style="text-align:right;"><span id="bCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+						</tr>
+						<tr>
+							<td class="PLAYRESULT C" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('cCnt', 'PLAYRESULT', 'C');">C</td>
+							<td style="text-align:right;padding-right:0.5em;"><span id="cCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+							<td class="PLAYRESULT D" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('dCnt', 'PLAYRESULT', 'D');">D</td>
+							<td style="text-align:right;"><span id="dCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+						</tr>
+						<tr>
+							<td class="PLAYRESULT E" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('eCnt', 'PLAYRESULT', 'E');">E</td>
+							<td style="text-align:right;padding-right:0.5em;"><span id="eCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+							<td class="PLAYRESULT F" style="width:2.4em;cursor:pointer;text-align:center;" onclick="filter('fCnt', 'PLAYRESULT', 'F');">F</td>
+							<td style="text-align:right;"><span id="fCnt" class="number" style="padding-right:0.15em;"></span>曲</td>
+						</tr>
+					</table>
+					<div style="margin-top:0.5em;">
+						<input type="checkbox" id="hideOpenData" onchange="search();"><label for="hideOpenData" style="font-size:0.9em;">未解禁曲を表示しない</label>
+					</div>
+				</div>
+				<div style="font-size:0.7em;font-weight:bold;margin-top:0.5em;">【ソート】</div>
+				<div style="font-size:0.8em;">
+					<select id="sort" onchange="handleSearchCompleted();">
+						<option value="title">曲名</option>
+						<option value="score">スコアレート</option>
+						<option value="BPM">BPM</option>
+					</select>
+					<select id="ad" onchange="handleSearchCompleted();">
+						<option value="asc">▼</option>
+						<option value="desc">▲</option>
+					</select>
+				</div>
+				<div style="font-size:0.7em;font-weight:bold;margin-top:0.5em;">【曲名検索】</div>
+				<div style="font-size:0.8em;display:flex;justify-content:flex-start;">
+					<div>
+						<input type="text" id="searchText" onchange="clearPreHit();" onkeydown="jumpKeydown();">
+					</div>
+					<div id="clearButtonContainer">
+						<div id="clearButton" onclick="clearText();">×</div>
+					</div>
+					<button id="jumpBtn" type="button" onclick="jump();">Jump</button>
+				</div>
+				<div style="font-size:0.7em;font-weight:bold;margin-top:0.5em;">【Reflax連携 TSVファイル取込】</div>
+				<div>
+					<input style="display:none;" type="file" id="tracker" onchange="readFile();"/>
+					<button type="button" style="font-size:0.8em;" onclick="ById('tracker').click();">ファイルを選択</button>
+				</div>
+			</div>
+			<div id="dtContainer">
+				<table id="dt"></table>
+			</div>
+			<div style="position:absolute;left:0px;bottom:0px;font-size:0.7em;padding-left:4px;">
+				<span class="number">VERSION <span id="displayVer"></span></span>
+				<button type="button" onclick="storage.remove('MusicData');loadMusicData();">更新</button>
+			</div>
+		</form>
+	</body>
+</html>
