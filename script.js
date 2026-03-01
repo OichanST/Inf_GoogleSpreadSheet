@@ -7,7 +7,7 @@ let clearStatusFilter = null;
 // プレイ結果フィルタ
 let playResultFilter = null;
 // Google Spread Sheetデータ取得用のAPIのURL
-const gsendpoint = "https://script.google.com/macros/s/AKfycbx-3V3VejKsgndZzvlNu9scncDVICCQ2qf9W3QyW3IYErVgkRZpNkIkPz_mzUnLAp8c3w/exec";
+const gsendpoint = "https://script.google.com/macros/s/AKfycbxIaQ6fbvHINLb4pdBMsrXVcWnpeRGsa9jqwUXQNtKQWNh_SbA5kTHUQ1o7_NvpMGF4Hg/exec";
 
 /**
  * 楽曲データのロード
@@ -37,6 +37,8 @@ function loadMusicData(){
 			musicData = data.musicList;
 			
 			customBPM = data.customBPM;
+			
+			loadPlayResult();
 		});
 	// セッションストレージにデータがある場合
 	}else{
@@ -50,9 +52,10 @@ function loadMusicData(){
 		musicData = storageMusicData.musicList;
 		
 		customBPM = storageMusicData.customBPM;
+		
+		loadPlayResult();
 	}
-	
-	loadPlayResult();
+
 }
 
 function loadPlayResult(){
@@ -137,6 +140,7 @@ function mergeMusicData(playResult){
 						mData[key]["PLAYRESULT"] = rec[key].PLAYRESULT;
 						mData[key]["EXSCORE"] = rec[key].EXSCORE;
 						mData[key]["MISSCOUNT"] = rec[key].MISSCOUNT;
+						mData[key]["MV"] = rec[key].MV;
 					}
 				}
 			}
@@ -148,7 +152,7 @@ function mergeMusicData(playResult){
 		}
 	});
 	
-	console.log(mergedMusicData);
+//	console.log(mergedMusicData);
 	
 	search();
 }
@@ -210,7 +214,8 @@ function handleSearched(rec, key){
 			CLEARSTATUS:rec[key].CLEARSTATUS,
 			PLAYRESULT:rec[key].PLAYRESULT,
 			EXSCORE:rec[key].EXSCORE,
-			MISSCOUNT:rec[key].MISSCOUNT
+			MISSCOUNT:rec[key].MISSCOUNT,
+			MV:rec[key].MV
 		});
 	}else{
 		// こちらのルートに入るということはデータ不正
@@ -385,6 +390,8 @@ function displayMusicData(rivals){
 		}else{
 			cnClass = "NOCN";
 		}
+		
+		const clearStatus = rec.CLEARSTATUS ? rec.CLEARSTATUS.replaceAll(" ", "_") : "";
 		// 楽曲データ出力レイアウト設定
 		let htmlString = `
 			<td>
@@ -394,7 +401,7 @@ function displayMusicData(rivals){
 							${cnText}
 						</div>
 						<div class="title">
-							<div class="STAT TOP_${rec.CLEARSTATUS.replaceAll(" ", "_")} TOP_${rec.type}" style="width:0.7em;"></div>
+							<div class="STAT TOP_${clearStatus} TOP_${rec.type}" style="width:0.7em;"></div>
 							<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;padding-top:0.2em;">${rec.DIFFICULT}</div>
 							<div style="padding-top:0.2em;${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
 						</div>
@@ -407,6 +414,16 @@ function displayMusicData(rivals){
 								<div class="number" style="width:3em;">NOTES</div>
 								<div class="number" style="width:4em;text-align:right;">${rec.NOTES}</div>
 							</div>
+						</div>
+						<div style="width:5em;text-align:center;">
+		`;
+		
+		if(rec.MV){
+			htmlString += `
+							<img src="mv.png" height="44px" onclick="sendMV('${rec.MV}');"/>
+			`;
+		}
+		htmlString += `
 						</div>
 					</div>
 					<div class="dataArea">
@@ -434,7 +451,7 @@ function displayMusicData(rivals){
 		}
 		
 		htmlString += `
-									<div style="font-weight:bold;" class="number ${rec.CLEARSTATUS.replaceAll(" ", "_")}">${rec.CLEARSTATUS}</div>
+									<div style="font-weight:bold;" class="number ${clearStatus}">${rec.CLEARSTATUS}</div>
 								</div>
 							</div>
 		`;
@@ -508,6 +525,8 @@ function displayMusicData(rivals){
 		r.onclick = function(){
 			// 選択されたセルを取得
 			let t = event.target;
+			
+			if(t.tagName == "IMG")return;
 			// 行以外の場合
 			while(t.tagName != "TR"){
 				// 行まで遡及
@@ -531,6 +550,10 @@ function displayMusicData(rivals){
 	summary(rivalsWinLose);
 	// スクロール位置をリセット
 	ById("dtContainer").scrollTop = 0;
+}
+
+function sendMV(url){
+	window.open(url, '_blank');
 }
 
 /**
@@ -666,6 +689,7 @@ function openInputForm(title, type){
 		setVal("CLEARSTATUS", finder[spdp].CLEARSTATUS);
 		setVal("EXSCORE", finder[spdp].EXSCORE);
 		setVal("MISSCOUNT", finder[spdp].MISSCOUNT);
+		setVal("MV", finder[spdp].MV);
 		// ノーツ数とEXSCOREからリザルト計算
 		const res = calc(finder[spdp].NOTES, finder[spdp].EXSCORE);
 		// 計算結果を反映
@@ -732,6 +756,7 @@ function save(){
 		mData[spdp].PLAYRESULT = getText("PLAYRESULT");
 		mData[spdp].EXSCORE = getIntVal("EXSCORE");
 		mData[spdp].MISSCOUNT = getIntVal("MISSCOUNT");
+		mData[spdp].MV = getVal("MV");
 	// 未検出
 	}else{
 		// エラー
@@ -750,6 +775,7 @@ function save(){
 		target[spdp].PLAYRESULT = getText("PLAYRESULT");
 		target[spdp].EXSCORE = getIntVal("EXSCORE");
 		target[spdp].MISSCOUNT = getIntVal("MISSCOUNT");
+		target[spdp].MV = getVal("MV");
 	// 未検出
 	}else{
 		// エラー
@@ -758,30 +784,37 @@ function save(){
 	}
 	// ストレージに検索結果を保管する
 	storage.set(userId, storageData);
-	// 保存用にデータを成型し、Google SpreadSheet更新
-	fetch(
-		gsendpoint + "?id=" + userId,
-		{
-			method:"POST",
-			mode:"no-cors",
-			headers:{'Content-Type':'application/json'},
-			body:JSON.stringify({
-				TITLE:title,
-				TYPE:spdp,
-				OPEN:getChecked("OPEN"),
-				CLEARSTATUS:getVal("CLEARSTATUS"),
-				PLAYRESULT:getText("PLAYRESULT"),
-				EXSCORE:getIntVal("EXSCORE"),
-				MISSCOUNT:getIntVal("MISSCOUNT")
-			})
-		}
-	).
-	then(data => {
-		// 入力フォームを非表示
-		hide("inputContainer");
+	try{
+		// 保存用にデータを成型し、Google SpreadSheet更新
+		fetch(
+			gsendpoint + "?id=" + userId,
+			{
+				method:"POST",
+				mode:"no-cors",
+				headers:{'Content-Type':'application/json'},
+				body:JSON.stringify([{
+					TITLE:title,
+					TYPE:spdp,
+					OPEN:getChecked("OPEN"),
+					CLEARSTATUS:getVal("CLEARSTATUS"),
+					PLAYRESULT:getText("PLAYRESULT"),
+					EXSCORE:getIntVal("EXSCORE"),
+					MISSCOUNT:getIntVal("MISSCOUNT"),
+					MV:getVal("MV")
+				}])
+			}
+		).
+		then(data => {
 		
-		search();
-	});
+			console.log(data);
+			// 入力フォームを非表示
+			hide("inputContainer");
+			
+			search();
+		});
+	}catch(e){
+		console.log("ERROR:" + e.message);
+	}
 }
 /**
  * Reflux連携 TSVファイル読み込み
@@ -839,12 +872,69 @@ function readFile(){
 		// 曲タイトルの無いレコードは除外する
 		const hashedList = tempList.filter(inputData => inputData.title != "");
 		// バッチ更新処理を起動
-		processBatchUpdate(hashedList, true);
+		//processBatchUpdate(hashedList, true);
 		
-		ById("tracker").value = null;
+		const playTypes = ["SPN","SPH","SPA","SPL","DPN","DPH","DPA","DPL"];
+	
+		let i = 1;
+	
+		const requestArray = new Array();
+	
+		for(let hash of hashedList){
+			
+			for(let playType of playTypes){
+			
+				if(hash[playType + "_EX_Score"] != "0"){
+				
+					requestArray.push({
+						TITLE:hash.title.trim(),
+						TYPE:playType,
+						OPEN:true,
+						CLEARSTATUS:castClearStatus(hash[playType + "_Lamp"]),
+						PLAYRESULT:hash[playType + "_Letter"],
+						EXSCORE:hash[playType + "_EX_Score"],
+						MISSCOUNT:hash[playType + "_Miss_Count"]
+					});
+				}
+			}
+		}
+		// 保存用にデータを成型し、Google SpreadSheet更新
+		fetch(
+			gsendpoint + "?id=" + userId,
+			{
+				method:"POST",
+				mode:"no-cors",
+				headers:{'Content-Type':'application/json'},
+				body:JSON.stringify(requestArray)
+			}
+		).then(data => {
+			console.log(data);
+			ById("tracker").value = null;
+			storage.remove(userId);
+			loadPlayResult();
+		});
 	};
 	// ファイルの読み取りをトリガ
 	reader.readAsText(f);
+}
+
+function castClearStatus(val){
+	switch(val){
+		case "F":
+			return "FAILED";
+		case "NC":
+			return "CLEAR";
+		case "EC":
+			return "EASY CLEAR";
+		case "HC":
+			return "HARD CLEAR";
+		case "EX":
+			return "EX HARD CLEAR";
+		case "FC":
+			return "FULL COMBO";
+		default:
+			return val;
+	}
 }
 
 function openPkg(){

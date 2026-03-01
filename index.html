@@ -1,4 +1,4 @@
-<html lang="ja">
+<htm　l lang="ja">
 	<head>
 		<title>Infinitasプレイリザルト管理</title>
 		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
@@ -63,6 +63,12 @@
 							</td>
 							<td>
 								<input type="number" class="number" id="MISSCOUNT" min="0" max="9999" style="font-size:0.95em;width:4em;text-align:right;padding-right:0.2em;" onkeydown="focusReset();" onchange="resetMinus();"/>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="4">
+								動画URL:
+								<input type="text" id="MV" style="font-size:0.95em;width:50em;"/>
 							</td>
 						</tr>
 					</tbody>
@@ -226,7 +232,7 @@
 			</div>
 			<div style="position:absolute;left:0px;bottom:0px;font-size:0.7em;padding-left:4px;">
 				<span class="number">VERSION <span id="displayVer"></span></span>
-				<button type="button" onclick="storage.remove('MusicData');loadMusicData();">更新</button>
+				<button type="button" onclick="storage.remove('MusicData');storage.remove(userId);loadMusicData();">更新</button>
 			</div>
 		</form>
 	</body>
