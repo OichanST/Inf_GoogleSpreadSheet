@@ -69,6 +69,7 @@ function loadPlayResult(){
 		fetch(gsendpoint + "?type=getPlayResult&id=" + userId).
 		then(response => response.json()).
 		then(data => {
+			console.log("data loaded from Google Spread sheet.");
 			// セッションストレージに楽曲データを退避
 			storage.set(userId, data);
 			
@@ -147,7 +148,7 @@ function mergeMusicData(playResult){
 		// 対応するデータ未検出
 		}else{
 			// ストレージデータがおかしい可能性大
-			throw new Error("Exception occured (on search) please reflesh storage data... " + mRec.TITLE);
+			throw new Error("Exception occured (on search) please reflesh storage data... " + rec.TITLE);
 			return;
 		}
 	});
@@ -913,6 +914,254 @@ function readFile(){
 			storage.remove(userId);
 			loadPlayResult();
 		});
+	};
+	// ファイルの読み取りをトリガ
+	reader.readAsText(f);
+}
+
+/**
+ * Reflux連携 データチェック
+ */
+function checkMusicData(){
+	// スピナーを表示
+	show("spinner");
+	// ファイルリーダー
+	const reader = new FileReader();
+	// アップロードファイル取得
+	const files = event.target.files;
+	// キャンセル時の処理
+	if(files.length <= 0)return;
+	// アップロードファイル取得
+	const f = files[0];
+	// キャンセル時の処理
+	if(!f)return;
+	// ファイルリーダーでファイル読み取り時のイベント処理
+	reader.onload = (evt) => {
+		// 読み取り内容の取得
+		const fileContent = evt.target.result;
+		// 改行で配列に分割
+		const records = fileContent.split("\r\n");
+		// ヘッダ情報リスト
+		const headerInfo = new Array();
+		// ヘッダ読み取りフラグ
+		let readHeader = false;
+		// 一時リスト
+		let tempList = new Array();
+		// 読み取ったレコード単位で処理
+		records.forEach((rec) => {
+			// タブで各項目値に分割
+			const recList = rec.split("\t");
+			// ヘッダ未読み取り＝先頭行の処理の場合
+			if(!readHeader){
+				// 各項目値をヘッダ情報として退避
+				recList.forEach(key =>{
+					headerInfo.push(key);
+				});
+				// ヘッダ読み取りフラグON
+				readHeader = true;
+			// ヘッダ＝先頭行以外の場合
+			}else{
+				// レコード項目値を退避するためのハッシュ
+				const recHash = {};
+				// ヘッダ分ループ
+				for(let i = 0; i < headerInfo.length; i++){
+					// ヘッダの値をキーとしてハッシュに格納　※半角SPはアンダースコアに変換
+					recHash[headerInfo[i].replaceAll(" ", "_")] = recList[i];
+				}
+				// 一時リストにハッシュ化されたレコードを退避
+				tempList.push(recHash);
+			}
+		});
+		// 曲タイトルの無いレコードは除外する
+		const hashedList = tempList.filter(inputData => inputData.title != "");
+		// バッチ更新処理を起動
+		const playTypes = ["SPN","SPH","SPA","SPL","DPN","DPH","DPA","DPL"];
+
+		const notRegisterData = new Array();
+
+		for(const hash of hashedList){
+			
+			const findData = mergedMusicData.find(data => data.TITLE == hash.title.trim());
+
+			if(!findData){
+				notRegisterData.push(hash);
+			}else{
+				if(hash.SPN_Note_Count && !findData.SPN){
+					notRegisterData.push({title:hash.title.trim(),type:"SPN",Rating:hash.SPN_Rating,Notes:hash.SPN_Note_Count});
+				}
+				if(hash.SPH_Note_Count && !findData.SPH){
+					notRegisterData.push({title:hash.title.trim(),type:"SPH",Rating:hash.SPH_Rating,Notes:hash.SPH_Note_Count});
+				}
+				if(hash.SPA_Note_Count && !findData.SPA){
+					notRegisterData.push({title:hash.title.trim(),type:"SPA",Rating:hash.SPA_Rating,Notes:hash.SPA_Note_Count});
+				}
+				if(hash.SPL_Note_Count && !findData.SPL){
+					notRegisterData.push({title:hash.title.trim(),type:"SPL",Rating:hash.SPL_Rating,Notes:hash.SPL_Note_Count});
+				}
+				if(hash.DPN_Note_Count && !findData.DPN){
+					notRegisterData.push({title:hash.title.trim(),type:"DPN",Rating:hash.DPN_Rating,Notes:hash.DPN_Note_Count});
+				}
+				if(hash.DPH_Note_Count && !findData.DPH){
+					notRegisterData.push({title:hash.title.trim(),type:"DPH",Rating:hash.DPH_Rating,Notes:hash.DPH_Note_Count});
+				}
+				if(hash.DPA_Note_Count && !findData.DPA){
+					notRegisterData.push({title:hash.title.trim(),type:"DPA",Rating:hash.DPA_Rating,Notes:hash.DPA_Note_Count});
+				}
+				if(hash.DPL_Note_Count && !findData.DPL){
+					notRegisterData.push({title:hash.title.trim(),type:"DPL",Rating:hash.DPL_Rating,Notes:hash.DPL_Note_Count});
+				}
+			}
+		}
+
+		console.log(notRegisterData);
+
+		const dt = ById("dt2");
+
+		for(data of notRegisterData){
+
+			const row = createRow();
+
+			const cell = createCell();
+
+			cell.innerText = data.title;
+
+			row.appendChild(cell);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellSPNRating = createCell();
+
+			cellSPNRating.innerText = data.SPN_Rating
+
+			row.appendChild(cellSPNRating);
+
+			const cellSPNNotes = createCell();
+
+			cellSPNNotes.innerText = data.SPN_Note_Count
+
+			row.appendChild(cellSPNNotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellSPHRating = createCell();
+
+			cellSPHRating.innerText = data.SPH_Rating
+
+			row.appendChild(cellSPHRating);
+
+			const cellSPHNotes = createCell();
+
+			cellSPHNotes.innerText = data.SPH_Note_Count
+
+			row.appendChild(cellSPHNotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellSPARating = createCell();
+
+			cellSPARating.innerText = data.SPA_Rating
+
+			row.appendChild(cellSPARating);
+
+			const cellSPANotes = createCell();
+
+			cellSPANotes.innerText = data.SPA_Note_Count
+
+			row.appendChild(cellSPANotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellSPLRating = createCell();
+
+			cellSPLRating.innerText = data.SPL_Rating
+
+			row.appendChild(cellSPLRating);
+
+			const cellSPLNotes = createCell();
+
+			cellSPLNotes.innerText = data.SPL_Note_Count
+
+			row.appendChild(cellSPLNotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellDPNRating = createCell();
+
+			cellDPNRating.innerText = data.DPN_Rating
+
+			row.appendChild(cellDPNRating);
+
+			const cellDPNNotes = createCell();
+
+			cellDPNNotes.innerText = data.DPN_Note_Count
+
+			row.appendChild(cellDPNNotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellDPHRating = createCell();
+
+			cellDPHRating.innerText = data.DPH_Rating
+
+			row.appendChild(cellDPHRating);
+
+			const cellDPHNotes = createCell();
+
+			cellDPHNotes.innerText = data.DPH_Note_Count
+
+			row.appendChild(cellDPHNotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellDPARating = createCell();
+
+			cellDPARating.innerText = data.DPA_Rating
+
+			row.appendChild(cellDPARating);
+
+			const cellDPANotes = createCell();
+
+			cellDPANotes.innerText = data.DPA_Note_Count
+
+			row.appendChild(cellDPANotes);
+
+			row.appendChild(createCell());
+			row.appendChild(createCell());
+
+			const cellDPLRating = createCell();
+
+			cellDPLRating.innerText = data.DPL_Rating
+
+			row.appendChild(cellDPLRating);
+
+			const cellDPLNotes = createCell();
+
+			cellDPLNotes.innerText = data.DPL_Note_Count
+
+			row.appendChild(cellDPLNotes);
+
+			dt.appendChild(row);
+		}
+
+		hide("spinner");
+
+		ById("datacheck").value = null;
+	
 	};
 	// ファイルの読み取りをトリガ
 	reader.readAsText(f);
