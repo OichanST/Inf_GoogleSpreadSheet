@@ -230,7 +230,7 @@ let preHit = null;
  * 入力内容をクリア
  */
 function clearText(){
-	setText("searchText", "");
+	setVal("searchText", "");
 }
 /**
  * 前回の検索結果をクリア
@@ -268,8 +268,8 @@ function jump(){
 		const title = row.getAttribute("title");
 		// 前回の検索結果なし
 		if(!preHit){
-			// 検索条件を含む場合（中間一致）
-			if(title.indexOf(searchText) >= 0){
+			// 検索条件を含む場合（小文字に変換して中間一致）
+			if(title.toLowerCase().includes(searchText.toLowerCase())){
 				preHit = title;
 				// ヒットした行を画面上に表示
 				row.scrollIntoView();
@@ -285,6 +285,9 @@ function jump(){
 			}
 		}
 	}
+	
+	// ここまで来たということは該当なし？
+	alert("該当がありませんでした。");
 }
 /**
  * ライバル管理フォーム表示
@@ -301,6 +304,67 @@ function openRival(){
 function closeRival(){
 	// 非表示
 	hide("rivalContainer");
+}
+/**
+ * ライバル追加
+ */
+function addRival(){
+	show("spinner");
+	// 入力されたIDを取得
+	const rivalId = getVal("rivalId");
+	// 未入力なら何もしない
+	if(!rivalId)return;
+	// 表示ユーザーと同名のライバルを登録
+	if(rivalId == userId){
+		alert("現在表示中のユーザーをライバルとして登録することはできません。");
+		return;
+	}
+	// セッションに登録されているライバル情報の取得
+	let rivals = storage.get("rivals");
+	// データなし
+	if(!rivals){
+		// 配列を初期生成
+		rivals = new Array();
+	}
+	// Google spreadsheetデータをロードする
+	fetch(gsendpoint + "?type=checkUser&id=" + rivalId).
+	then(response => response.json()).
+	then(data => {
+		// 情報あり
+		if(data.result){
+			// リストに追加
+			rivals.push({Id:rivalId});
+			// セッション情報の更新
+			storage.set("rivals", rivals);
+			// ライバル管理画面再描画
+			fetchRival();
+			// 再検索
+			search();
+		// 情報なし
+		}else{
+			// メッセージ表示
+			alert(`"${rivalId}"のデータは登録されていません。`);
+		}
+	});
+}
+
+/**
+ * ライバル削除
+ */
+function deleteRival(target){
+	// 選択されたライバルID取得
+	const rivalId = target.name;
+	// セッションからライバルリスト取得
+	let rivals = storage.get("rivals");
+	// 指定IDのライバルのみを除去
+	const newRivals = rivals.filter(rival => rival.Id != rivalId);
+	// データベース更新
+	updateDoc(docRef, {rivals:newRivals}).then(() =>{
+		// セッション情報の更新
+		storage.set("rivals", newRivals);
+		// ライバル管理画面再描画
+		fetchRival();
+	});
 }
 /**
  * セッションの内容をライバル管理フォームに反映

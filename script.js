@@ -22,11 +22,13 @@ function loadMusicData(){
 	// セッションストレージに楽曲データが無い場合
 	if(!storageMusicData){
 		// ログ
-		console.log("楽曲データ：ストレージデータなし -> Google SpreadSheetからロード");
+		console.log("楽曲データ：ストレージデータなし -> Google SpreadSheetからロード...");
 		// Google spreadsheetデータをロードする
 		fetch(gsendpoint + "?type=getMusicData").
 		then(response => response.json()).
 		then(data => {
+			// ログ
+			console.log("楽曲データ：ロード完了");
 			// セッションストレージに楽曲データを退避
 			storage.set("MusicData", data);
 			// バージョン退避
@@ -35,9 +37,9 @@ function loadMusicData(){
 			setText("displayVer", version);
 			// 使用されるデータの書き換え
 			musicData = data.musicList;
-			
+			// 特殊BPM情報の退避
 			customBPM = data.customBPM;
-			
+			// プレイリザルトのロード
 			loadPlayResult();
 		});
 	// セッションストレージにデータがある場合
@@ -50,36 +52,44 @@ function loadMusicData(){
 		setText("displayVer", version);
 		// 楽曲データをJSONオブジェクトにデシリアライズ
 		musicData = storageMusicData.musicList;
-		
+		// 特殊BPM情報の退避
 		customBPM = storageMusicData.customBPM;
-		
+		// プレイリザルトのロード
 		loadPlayResult();
 	}
 
 }
 
+/**
+ * プレイリザルトのロード
+ */
 function loadPlayResult(){
 	// セッションストレージからプレイリザルト取得
 	const storagePlayResult = storage.get(userId);
 	// セッションストレージにプレイリザルトが無い場合
 	if(!storagePlayResult){
 		// ログ
-		console.log("プレイリザルト：ストレージデータなし -> Google SpreadSheetからロード");
+		console.log("プレイリザルト：ストレージデータなし -> Google SpreadSheetからロード...");
 		// Google spreadsheetデータをロードする
 		fetch(gsendpoint + "?type=getPlayResult&id=" + userId).
 		then(response => response.json()).
 		then(data => {
-			console.log("data loaded from Google Spread sheet.");
+			// ログ
+			console.log("プレイリザルト：ロード完了");
 			// セッションストレージに楽曲データを退避
 			storage.set(userId, data);
-			
+			// 楽曲データとプレイリザルトをマージ
 			mergeMusicData(data);
 		});
 	// セッションストレージにデータがある場合
 	}else{
+		// ログ
+		console.log("プレイリザルト：ストレージデータあり");
+		// 楽曲データとプレイリザルトをマージ
 		mergeMusicData(storagePlayResult);
 	}
 }
+
 /**
  * フィルタ
  */
@@ -101,6 +111,7 @@ function filter(argCntId, argType, argFilter){
 	// 再検索
 	search();
 }
+
 /**
  * フィルタリセット
  */
@@ -115,6 +126,7 @@ function clearFilter(){
 function clearMergedMusicData(){
 	mergedMusicData = new Array();
 }
+
 /**
  * 楽曲データとプレイリザルトのマージ
  */
@@ -152,22 +164,25 @@ function mergeMusicData(playResult){
 			return;
 		}
 	});
-	
-//	console.log(mergedMusicData);
-	
+	// 検索処理
 	search();
 }
 
+/**
+ * 検索処理
+ */
 function search(){
+	// スピナーを表示
+	show("spinner");
 	// SP/DP取得
 	const spdp = formVal("SPDP");
 	// LV取得
 	const lv = formVal("LV");
-	
+	// 表示データ
 	displayData = new Array();
-	
+	// マージデータループ
 	mergedMusicData.forEach(rec => {
-	
+		// SP/DP、及び指定LVに合致するデータを抽出
 		if(rec[spdp + "N"] && rec[spdp + "N"].DIFFICULT == lv){
 			handleSearched(rec, spdp + "N");
 		}
@@ -181,7 +196,7 @@ function search(){
 			handleSearched(rec, spdp + "L");
 		}
 	});
-	
+	// 検索完了時処理
 	handleSearchCompleted();
 }
 
@@ -229,38 +244,68 @@ function handleSearched(rec, key){
  */
 function handleSearchCompleted(){
 	// ログ
-	console.log("検索結果を画面に反映.");
+	console.log("検索結果を画面に反映");
 	// SP/DP取得
 	const spdp = formVal("SPDP");
 	// LV取得
 	const lv = formVal("LV");
-	// ストレージに検索結果を保管する
-//	storage.set(userId + "|" + spdp + "_" + lv, mergedMusicData);
 	// ライバル情報の取得
 	let rivals = storage.get("rivals");
 	// 登録されている場合
 	if(rivals){
 		// セッションに該当のライバルデータがある場合は除外
-		const filteredRivals = rivals.filter(rival => !storage.get(rival.Id + "|" + spdp + "_" + lv));
-		// ログ
-		console.log("ライバルデータの検索開始");
-		// セッションに無い全ライバル情報を取得
-		fetchAllRivalsData(filteredRivals).then(() =>{
+		const filteredRivals = rivals.filter(rival => !storage.get(rival.Id));
+		// 未取得のライバルがいる場合
+		if(filteredRivals.length > 0){
 			// ログ
-			console.log("ライバルデータ読み出し完了");
+			console.log("ライバルデータの検索開始");
+			// セッションに無い全ライバル情報を取得
+			fetchAllRivalsData(filteredRivals);
+		}else{
 			// 楽曲データ表示
 			displayMusicData(rivals);
-		});
+		}
 	// 未登録
 	}else{
 		// 楽曲データ表示
 		displayMusicData(rivals);
 	}
 }
+
+/**
+ * ライバル情報の取得
+ */
+function fetchAllRivalsData(rivals, i){
+	// 再帰用のインデクサ処理
+	let idx = (i == null ? 0 : i);
+	// 指定ユーザーのプレイリザルトを取得
+	fetch(gsendpoint + "?type=getPlayResult&id=" + rivals[idx].Id).
+	then(response => response.json()).
+	then(data =>{
+		// セッションストレージにプレイリザルトを退避
+		storage.set(rivals[idx].Id, data);
+		// インデクサインクリメント
+		idx++;
+		// リストの最後まで読み出し終わった場合
+		if(idx == rivals.length){
+			// ログ
+			console.log("ライバルデータ読み出し完了");
+			// 楽曲データ表示
+			displayMusicData(rivals);
+		// まだ読み出し終わってない場合
+		}else{
+			// 再帰実行
+			fetchAllRivalsData(rivals, i);
+		}
+	});
+}
+
+const waitTimer = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * 楽曲データ表示
  */
-function displayMusicData(rivals){
+async function displayMusicData(rivals){
 	// SP/DP取得
 	const spdp = formVal("SPDP");
 	// LV取得
@@ -340,12 +385,14 @@ function displayMusicData(rivals){
 	});
 	// ライバル勝敗データ
 	const rivalsWinLose = {};
+	// スピナーを表示
+	show("spinner");
 	// 検索結果ループ
-	displayData.forEach(rec => {
+	for(rec of displayData){
 		// 未解禁データ、且つ未解禁データを表示しない設定になっている場合
 		if(getChecked("hideOpenData") && !rec.OPEN){
 			// 何もしない
-			return;
+			continue;
 		}
 		// クリア状況フィルタが指定されている場合
 		if(clearStatusFilter != null){
@@ -354,14 +401,14 @@ function displayMusicData(rivals){
 				// 解禁済だった場合
 				if(rec.OPEN){
 					// 何もしない
-					return;
+					continue;
 				}
 			// フィルタ条件が未指定の場合
 			}else{
 				// クリア状況が不一致の場合
 				 if(clearStatusFilter != rec.CLEARSTATUS){
 				 	// 何もしない
-					return;
+					continue;
 				}
 			}
 		}
@@ -370,178 +417,14 @@ function displayMusicData(rivals){
 			// プレイ結果が不一致の場合
 			if(playResultFilter != rec.PLAYRESULT){
 				// 何もしない
-				return;
+				continue;
 			}
 		}
-		// 画面表示用の行生成
-		let r = createRow();
-		// CN表記用
-		let cnText = "";
-		let cnClass = "";
-		// [TODO]MSSどうするか
-		// 対象曲がCN or BSSの場合
-		if(rec.BSS == "BSS" || rec.CN == "CN"){
-			cnText = "CN";
-			cnClass = "CN";
-		// 対象曲がHBSS or HCNの場合
-		}else if(rec.BSS == "HBSS" || rec.CN == "HCN"){
-			cnText = "HCN";
-			cnClass = "HCN";
-		// 上記以外
-		}else{
-			cnClass = "NOCN";
-		}
-		
-		const clearStatus = rec.CLEARSTATUS ? rec.CLEARSTATUS.replaceAll(" ", "_") : "";
-		// 楽曲データ出力レイアウト設定
-		let htmlString = `
-			<td>
-				<div>
-					<div style="display:flex;justify-content:flex-end;">
-						<div class="${cnClass}" style="text-align:center;width:2.5em;margin-left:0.25em;margin-right:0.25em;">
-							${cnText}
-						</div>
-						<div class="title">
-							<div class="STAT TOP_${clearStatus} TOP_${rec.type}" style="width:0.7em;"></div>
-							<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;padding-top:0.2em;">${rec.DIFFICULT}</div>
-							<div style="padding-top:0.2em;${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
-						</div>
-						<div style="width:7em;font-size:0.9em;margin-left:0.3em;${rec.OPEN ? "" : "color:gray;"}">
-							<div style="display:flex;justify-content:flex-start;">
-								<div class="number" style="width:2em;">BPM</div>
-								<div class="number" style="width:5em;text-align:right;">${rec.BPM}</div>
-							</div>
-							<div style="display:flex;justify-content:flex-start;">
-								<div class="number" style="width:3em;">NOTES</div>
-								<div class="number" style="width:4em;text-align:right;">${rec.NOTES}</div>
-							</div>
-						</div>
-						<div style="width:5em;text-align:center;">
-		`;
-		
-		if(rec.MV){
-			htmlString += `
-							<img src="mv.png" height="44px" onclick="sendMV('${rec.MV}');"/>
-			`;
-		}
-		htmlString += `
-						</div>
-					</div>
-					<div class="dataArea">
-						<div style="display:flex;justify-content:space-between;">
-							<div style="display:flex;justify-content;flex-start;">
-								<div>
-									<div class="PLAYRESULT ${rec.PLAYRESULT}"style="width:2.1em;font-size:1.5em;margin-right:0.1em;padding-top:0.1em;padding-left:0.1em;padding-right:0.1em;text-align:center;">
-										<div>${rec.PLAYRESULT}</div>
-									</div>
-									<div class="number" style="font-size:0.9em;text-align:center;">${calc(rec.NOTES, rec.EXSCORE).detail}</div>
-								</div>
-								<div class="detailArea" style="font-size:1.0rem;">
-		`;
-		// 解禁済の場合、EXSCURE,MISS COUNTを表示
-		if(rec.OPEN){
-			htmlString += `
-									<div style="display:flex;justify-content:flex-start;">
-										<div class="number" style="width:6em;">EX SCORE</div>
-										<div class="number" style="width:3em;text-align:right;padding-right:0.5em;">${rec.EXSCORE}</div>
-										<div class="number" style="width:5.5em;">(${String(rec.EXSCORE / (rec.NOTES * 2) * 100).substring(0, 5)}%)</div>
-										<div class="number" style="width:7em;">MISS COUNT</div>
-										<div class="number" style="width:2.5em;text-align:right;padding-right:0.5em;">${rec.MISSCOUNT}</div>
-									</div>
-			`;
-		}
-		
-		htmlString += `
-									<div style="font-weight:bold;" class="number ${clearStatus}">${rec.CLEARSTATUS}</div>
-								</div>
-							</div>
-		`;
-		// 未プレイ以外でライバル登録済の場合
-		if(rec.CLEARSTATUS != "NO PLAY" && rivals){
-			// ライバル表示のレイアウト生成
-			htmlString += "<div style='font-size:1.0rem;'>";
-			// ライバル登録分繰り返す
-			rivals.forEach(rival =>{
-				// データ初期化
-				if(!rivalsWinLose[rival.Id]){
-					rivalsWinLose[rival.Id] = {win:0, lose:0, draw:0};
-				}
-				// セッションから既に検索済の情報を読み出す
-				const rivalData = storage.get(rival.Id + "|" + spdp + "_" + lv);
-				// 登録済の場合
-				if(rivalData){
-					// 該当の曲データの抽出
-					const rivalRec = rivalData.filter(data => data.TITLE == rec.TITLE);
-					// 該当のプレイスタイルデータの抽出
-					const rrec = rivalRec[0];
-
-					// ライバルがプレイ済の場合
-					if(rrec.CLEARSTATUS != "NO PLAY"){
-					
-						let winlose;
-						let clr;
-						// EXSCOREによる比較
-						if(rec.EXSCORE > rrec.EXSCORE){
-							clr = "yellow";
-							winlose = "WIN";
-							rivalsWinLose[rival.Id].win++;
-						}else if(rec.EXSCORE < rrec.EXSCORE){
-							clr = "blue;"
-							winlose = "LOSE";
-							rivalsWinLose[rival.Id].lose++;
-						}else{
-							clr = "green";
-							winlose = "DRAW";
-							rivalsWinLose[rival.Id].draw++;
-						}
-						// 出力
-						htmlString += `
-							<div style="display:flex;justify-content:flex-end;">
-								<div style="width:4em;">${rival.Id}</div>
-								<div style="width:9em;font-weight:bold" class="${rrec.CLEARSTATUS.replaceAll(" ", "_")}">${rrec.CLEARSTATUS}</div>
-								<div style="width:3em;text-align:right;margin-right:0.2em;">${rrec.EXSCORE}</div>
-								<div class="DIFFICULT" style="width:3em;text-align:center;background-color:${clr};color:white;">${winlose}</div>
-							</div>
-						`;
-					}
-				}
-			});
-			
-			htmlString += "</div>";
-		}
-		
-		htmlString += `
-						</div>
-					</div>
-				</div>
-			</td>
-		`;
-		
-		r.innerHTML = htmlString;
-		// 行に必要な情報を追加
-		r.style.cursor = "pointer";
-		r.setAttribute("title", rec.TITLE);
-		r.setAttribute("type", rec.type);
-		// 行クリック時のイベント処理を追加
-		r.onclick = function(){
-			// 選択されたセルを取得
-			let t = event.target;
-			
-			if(t.tagName == "IMG")return;
-			// 行以外の場合
-			while(t.tagName != "TR"){
-				// 行まで遡及
-				t = t.parentNode;
-			}
-			// タイトルとタイプ取得
-			const title = t.getAttribute("title");
-			const type = t.getAttribute("type");
-			// プレイリザルト入力フォームを開く
-			openInputForm(title, type);
-		}
-		// テーブルに行を追加
-		dt.appendChild(r);
-	});
+		// 行データを作ってテーブルに追加
+		renderRow(spdp, rec, rivals, rivalsWinLose);
+		// タイマーを挟んで描画させる
+		await waitTimer(0);
+	}
 	// 入力を有効化する
 	enable("SPDPSel");
 	enable("LVSel");
@@ -553,6 +436,181 @@ function displayMusicData(rivals){
 	ById("dtContainer").scrollTop = 0;
 }
 
+function renderRow(spdp, rec, rivals, rivalsWinLose){
+	// 画面表示用の行生成
+	let r = createRow();
+	// CN表記用
+	let cnText = "";
+	let cnClass = "";
+	// [TODO]MSSどうするか
+	// 対象曲がCN or BSSの場合
+	if(rec.BSS == "BSS" || rec.CN == "CN"){
+		cnText = "CN";
+		cnClass = "CN";
+	// 対象曲がHBSS or HCNの場合
+	}else if(rec.BSS == "HBSS" || rec.CN == "HCN"){
+		cnText = "HCN";
+		cnClass = "HCN";
+	// 上記以外
+	}else{
+		cnClass = "NOCN";
+	}
+	const clearStatus = rec.CLEARSTATUS ? rec.CLEARSTATUS.replaceAll(" ", "_") : "";
+	// 楽曲データ出力レイアウト設定
+	let htmlString = `
+		<td>
+			<div>
+				<div style="display:flex;justify-content:flex-end;">
+					<div class="${cnClass}" style="text-align:center;width:2.5em;margin-left:0.25em;margin-right:0.25em;">
+						${cnText}
+					</div>
+					<div class="title">
+						<div class="STAT TOP_${clearStatus} TOP_${rec.type}" style="width:0.7em;"></div>
+						<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;padding-top:0.2em;">${rec.DIFFICULT}</div>
+						<div style="padding-top:0.2em;${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
+					</div>
+					<div style="width:7em;font-size:0.9em;margin-left:0.3em;${rec.OPEN ? "" : "color:gray;"}">
+						<div style="display:flex;justify-content:flex-start;">
+							<div class="number" style="width:2em;">BPM</div>
+							<div class="number" style="width:5em;text-align:right;">${rec.BPM}</div>
+						</div>
+						<div style="display:flex;justify-content:flex-start;">
+							<div class="number" style="width:3em;">NOTES</div>
+							<div class="number" style="width:4em;text-align:right;">${rec.NOTES}</div>
+						</div>
+					</div>
+					<div style="width:5em;text-align:center;">
+	`;
+	// 動画URL指定がある場合
+	if(rec.MV){
+		// アイコンリンクを追加
+		htmlString += `
+						<img src="mv.png" height="44px" onclick="sendMV('${rec.MV}');"/>
+		`;
+	}
+	// データエリア追加
+	htmlString += `
+					</div>
+				</div>
+				<div class="dataArea">
+					<div style="display:flex;justify-content:space-between;">
+						<div style="display:flex;justify-content;flex-start;">
+							<div>
+								<div class="PLAYRESULT ${rec.PLAYRESULT}"style="width:2.1em;font-size:1.5em;margin-right:0.1em;padding-top:0.1em;padding-left:0.1em;padding-right:0.1em;text-align:center;">
+									<div>${rec.PLAYRESULT}</div>
+								</div>
+								<div class="number" style="font-size:0.9em;text-align:center;">${calc(rec.NOTES, rec.EXSCORE).detail}</div>
+							</div>
+							<div class="detailArea" style="font-size:1.0rem;">
+	`;
+	// 解禁済の場合、EXSCURE,MISS COUNTを表示
+	if(rec.OPEN){
+		htmlString += `
+								<div style="display:flex;justify-content:flex-start;">
+									<div class="number" style="width:6em;">EX SCORE</div>
+									<div class="number" style="width:3em;text-align:right;padding-right:0.5em;">${rec.EXSCORE}</div>
+									<div class="number" style="width:5.5em;">(${String(rec.EXSCORE / (rec.NOTES * 2) * 100).substring(0, 5)}%)</div>
+									<div class="number" style="width:7em;">MISS COUNT</div>
+									<div class="number" style="width:2.5em;text-align:right;padding-right:0.5em;">${rec.MISSCOUNT}</div>
+								</div>
+		`;
+	}
+	// クリアステータス追加
+	htmlString += `
+								<div style="font-weight:bold;" class="number ${clearStatus}">${rec.CLEARSTATUS}</div>
+							</div>
+						</div>
+	`;
+	// 未プレイ以外でライバル登録済の場合
+	if(rec.CLEARSTATUS != "NO PLAY" && rivals){
+		// ライバル表示のレイアウト生成
+		htmlString += "<div style='font-size:1.0rem;'>";
+		// ライバル登録分繰り返す
+		rivals.forEach(rival =>{
+			// データ初期化
+			if(!rivalsWinLose[rival.Id]){
+				rivalsWinLose[rival.Id] = {win:0, lose:0, draw:0};
+			}
+			// セッションから既に検索済の情報を読み出す
+			const rivalData = storage.get(rival.Id);
+			// 登録済の場合
+			if(rivalData){
+				// 該当の曲データの抽出
+				const rivalRec = rivalData.filter(data => data.TITLE == rec.TITLE);
+				// 該当のプレイスタイルデータの抽出
+				const rrec = rivalRec[0][spdp + rec.type];
+				// ライバルがプレイ済の場合
+				if(rrec.CLEARSTATUS != null && rrec.CLEARSTATUS != "" && rrec.CLEARSTATUS != "NO PLAY"){
+					// 勝敗
+					let winlose;
+					// 表示色
+					let clr;
+					// EXSCOREによる比較
+					if(rec.EXSCORE > rrec.EXSCORE){
+						clr = "yellow";
+						winlose = "WIN";
+						rivalsWinLose[rival.Id].win++;
+					}else if(rec.EXSCORE < rrec.EXSCORE){
+						clr = "blue"
+						winlose = "LOSE";
+						rivalsWinLose[rival.Id].lose++;
+					}else{
+						clr = "green";
+						winlose = "DRAW";
+						rivalsWinLose[rival.Id].draw++;
+					}
+					// 出力
+					htmlString += `
+						<div style="display:flex;justify-content:flex-end;">
+							<div style="width:4em;">${rival.Id}</div>
+							<div style="width:9em;font-weight:bold" class="${rrec.CLEARSTATUS.replaceAll(" ", "_")}">${rrec.CLEARSTATUS}</div>
+							<div style="width:6em;text-align:right;margin-right:0.2em;">${rrec.EXSCORE}(${rrec.EXSCORE - rec.EXSCORE})</div>
+							<div class="DIFFICULT" style="width:3em;text-align:center;background-color:${clr};color:white;">${winlose}</div>
+						</div>
+					`;
+				}
+			}
+		});
+		
+		htmlString += "</div>";
+	}
+	
+	htmlString += `
+					</div>
+				</div>
+			</div>
+		</td>
+	`;
+	// 画面に反映
+	r.innerHTML = htmlString;
+	// 行に必要な情報を追加
+	r.style.cursor = "pointer";
+	r.setAttribute("title", rec.TITLE);
+	r.setAttribute("type", rec.type);
+	// 行クリック時のイベント処理を追加
+	r.onclick = function(){
+		// 選択されたセルを取得
+		let t = event.target;
+		
+		if(t.tagName == "IMG")return;
+		// 行以外の場合
+		while(t.tagName != "TR"){
+			// 行まで遡及
+			t = t.parentNode;
+		}
+		// タイトルとタイプ取得
+		const title = t.getAttribute("title");
+		const type = t.getAttribute("type");
+		// プレイリザルト入力フォームを開く
+		openInputForm(title, type);
+	}
+	
+	dt.appendChild(r);
+}
+
+/**
+ * 動画表示
+ */
 function sendMV(url){
 	window.open(url, '_blank');
 }
@@ -568,7 +626,13 @@ function summary(rivalsWinLose){
 	
 	if(rivalsWinLose){
 		for(let rival in rivalsWinLose){
-			setHtml("rivalsWinLose", `<div>${rival} WIN:${rivalsWinLose[rival].win}  LOSE:${rivalsWinLose[rival].lose} DRAW:${rivalsWinLose[rival].draw}</div>`);
+			setHtml("rivalsWinLose",
+				`<div style="font-size:0.9rem;">
+					${rival} <span class="DIFFICULT" style="padding-left:5px;padding-right:5px;background:yellow;">WIN</span>:${rivalsWinLose[rival].win}
+					<span class="DIFFICULT" style="padding-left:5px;padding-right:5px;background:blue;">LOSE</span>:${rivalsWinLose[rival].lose}
+					<span class="DIFFICULT" style="padding-left:5px;padding-right:5px;background:green;">DRAW</span>:${rivalsWinLose[rival].draw}
+				</div>`
+			);
 		}
 	}
 	// 各変数の初期化
@@ -1186,6 +1250,23 @@ function castClearStatus(val){
 	}
 }
 
+function reloadPlayResult(){
+	show("spinner");
+	storage.remove(userId);
+	loadPlayResult();
+}
+
+function reloadRivals(){
+	show("spinner");
+	
+	const rivals = storage.get("rivals");
+	
+	rivals.forEach(rival => {
+		storage.remove(rival.Id);
+	});
+	loadPlayResult();
+}
+/*
 function openPkg(){
 
 	const pkgList = ById("pkgList");
@@ -1230,3 +1311,4 @@ function setPkg(){
 	
 	storage.set("pkg", pkg);
 }
+*/

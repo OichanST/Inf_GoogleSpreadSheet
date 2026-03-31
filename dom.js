@@ -66,6 +66,7 @@ function addText(r, text, style){
 function show(id){
 	ById(id).style.display = "block";
 }
+
 /**
  * 隠す
  */

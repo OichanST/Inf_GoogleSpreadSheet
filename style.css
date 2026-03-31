@@ -148,12 +148,13 @@ button{
 
 /* スピナー */
 #spinner{
-  position:absolute;
+  position:fixed;
   top:0px;
   left:0px;
   width:100vw;
   height:100vh;
-  background-color:rgba(64,64,64,0.5);
+  background-color:rgba(0,0,0,0.5);
+  z-index:999;
 }
 
 .spinnerContainer{

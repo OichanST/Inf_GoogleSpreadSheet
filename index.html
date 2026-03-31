@@ -1,4 +1,4 @@
-<htm　l lang="ja">
+<html lang="ja">
 	<head>
 		<title>Infinitasプレイリザルト管理</title>
 		<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
@@ -120,12 +120,13 @@
 							<option value="12">LEVEL 12</option>
 						</select>
 					</div>
-				</div>
-				<div>
 					<div>
 						<button type="button" id="rivalBtn" onclick="openRival();">ライバル管理</button>
-						<button type="button" id="pkgBtn" onclick="openPkg();">パッケージ管理</button>
+						<!--<button type="button" id="pkgBtn" onclick="openPkg();">パッケージ管理</button>-->
 					</div>
+				</div>
+				<div>
+
 				</div>
 				<!--集計結果表示-->
 				<div id="summaryContainer">
@@ -238,9 +239,15 @@
 				<table id="dt"></table>
 <!--				<table id="dt2" style="user-select:all;"></table>-->
 			</div>
-			<div style="position:absolute;left:0px;bottom:0px;font-size:0.7em;padding-left:4px;">
-				<span class="number">VERSION <span id="displayVer"></span></span>
-				<button type="button" onclick="storage.remove('MusicData');storage.remove(userId);loadMusicData();">更新</button>
+			<div style="position:fixed;left:0px;bottom:0px;font-size:0.7em;padding-left:4px;">
+				<div>
+					<button type="button" onclick="reloadPlayResult();">プレイリザルト再取得</button>
+					<button type="button" onclick="reloadRivals();">ライバルリザルト再取得</button>
+				</div>
+				<div>
+					<span class="number">VERSION <span id="displayVer"></span></span>
+					<button type="button" onclick="storage.remove('MusicData');storage.remove(userId);loadMusicData();">更新</button>
+				</div>
 			</div>
 		</form>
 	</body>
