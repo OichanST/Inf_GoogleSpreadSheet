@@ -17,9 +17,13 @@ let customBPM;
  * ドキュメントロード完了時処理
  */
 document.addEventListener("DOMContentLoaded", evt => {
+
+	console.log(screen.width);
+	console.log(screen.height);
 	// ログインユーザのチェック
 	if(!userId){
 		alert("パラメータでユーザーが指定されていません。");
+		hide("spinner");
 		return;
 	}
 	// セッションの操作者のIDを取得

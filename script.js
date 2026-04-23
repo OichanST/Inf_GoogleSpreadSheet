@@ -788,6 +788,11 @@ function openInputForm(title, type){
 		show("inputContainer");
 	}
 }
+
+function openUpdateOption(){
+	show("updContainer");
+}
+
 /**
  * 保存処理
  */
@@ -1250,13 +1255,24 @@ function castClearStatus(val){
 	}
 }
 
+function reloadMusicData(){
+	hide('updContainer');
+	show("spinner");
+	storage.remove('MusicData');
+	storage.remove(userId);
+	loadMusicData();
+}
+
 function reloadPlayResult(){
+	hide('updContainer');
 	show("spinner");
 	storage.remove(userId);
 	loadPlayResult();
 }
 
 function reloadRivals(){
+
+	hide('updContainer');
 	show("spinner");
 	
 	const rivals = storage.get("rivals");
@@ -1264,6 +1280,7 @@ function reloadRivals(){
 	rivals.forEach(rival => {
 		storage.remove(rival.Id);
 	});
+	
 	loadPlayResult();
 }
 /*
