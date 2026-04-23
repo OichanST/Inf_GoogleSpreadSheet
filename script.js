@@ -473,7 +473,7 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 						<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;padding-top:0.2em;">${rec.DIFFICULT}</div>
 						<div style="padding-top:0.2em;${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
 					</div>
-					<div style="width:7em;font-size:0.9em;margin-left:0.3em;${rec.OPEN ? "" : "color:gray;"}">
+					<div class="bpmAndNotes" style="width:7em;margin-left:0.3em;${rec.OPEN ? "" : "color:gray;"}">
 						<div style="display:flex;justify-content:flex-start;">
 							<div class="number" style="width:2em;">BPM</div>
 							<div class="number" style="width:5em;text-align:right;">${rec.BPM}</div>
@@ -505,7 +505,7 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 								</div>
 								<div class="number" style="font-size:0.9em;text-align:center;">${calc(rec.NOTES, rec.EXSCORE).detail}</div>
 							</div>
-							<div class="detailArea" style="font-size:1.0rem;">
+							<div class="detailArea">
 	`;
 	// 解禁済の場合、EXSCURE,MISS COUNTを表示
 	if(rec.OPEN){
