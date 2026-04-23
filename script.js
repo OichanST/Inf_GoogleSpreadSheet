@@ -172,6 +172,10 @@ function mergeMusicData(playResult){
  * 検索処理
  */
 function search(){
+	if(window.matchMedia("(orientation: portrait)").matches){
+		console.log("matched!!!");
+		hide("menuContainer");
+	}
 	// スピナーを表示
 	show("spinner");
 	// SP/DP取得

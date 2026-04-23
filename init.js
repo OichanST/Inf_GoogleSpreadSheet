@@ -41,3 +41,34 @@ document.addEventListener("DOMContentLoaded", evt => {
 	loadMusicData();
 });
 
+let startX;
+let endX;
+
+document.addEventListener("touchstart", evt => {
+
+	startX = evt.touches[0].pageX;
+});
+
+document.addEventListener("touchend", evt => {
+
+	endX = evt.changedTouches[0].pageX;
+	
+	swipe();
+});
+
+function swipe(){
+
+	const diffX = startX - endX;
+	
+	console.log(diffX);
+
+	if(diffX > 500){
+		hide("menuContainer");
+	}
+
+	if(diffX < -500){
+		show("menuContainer");
+//		console.log("swiped!!");
+	}
+}
+

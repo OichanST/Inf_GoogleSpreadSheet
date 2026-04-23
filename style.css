@@ -1,17 +1,81 @@
 /* 縦向き */
 @media screen and (orientation:portrait){
-
+	html{
+		font-size:1.75em;
+	}
+	#menuContainer{
+		display:none;
+		z-index:2;
+		background-color:black;
+		padding:1rem;
+	}
+	/* 集計結果表示領域 */
+	#summaryContainer{
+		font-size:1.75rem;
+		width:90%;
+		margin-top:0.3rem;
+		opacity:1;
+	}
+	#dtContainer{
+		position:absolute;
+		overflow-y:scroll;
+		top:0;
+		margin-left:0;
+		width:100%;
+		height:100vh;
+	}
+	input,select:not(.number){
+		font-size:2.0rem;
+	}
+	select.number{
+		font-size:1.5rem;
+	}
+	#rivalBtn,#pkgBtn{
+		font-size:1.5rem;
+		height:2.4rem;
+	}
 }
+
 /* 横向き */
+@media screen and (orientation:landscape){
+	#menuContainer{
+		padding-left:0.1em;
+	}
+	/* 集計結果表示領域 */
+	#summaryContainer{
+		font-size:0.9rem;
+		width:17.5rem;
+		margin-top:0.3rem;
+	}
+	#dtContainer{
+		position:absolute;
+		overflow-y:scroll;
+		top:0;
+		margin-left:17rem;
+		width:calc(100% - 17em);
+		height:100vh;
+	}
+	input,select:not(.number){
+		font-size:1.1rem;
+	}
+	select.number{
+		font-size:0.75rem;
+	}
+	#rivalBtn,#pkgBtn{
+		font-size:0.8rem;
+		height:1.8rem;
+	}
+}
+
 @media screen and (orientation:landscape) and (max-width:1440px){
-	body{
-		font-size:1em;
+	html{
+		font-size:1rem;
 	}
 }
 
 @media screen and (orientation:landscape) and (min-width:1440px){
-	body{
-		font-size:1.25em;
+	html{
+		font-size:1.25rem;
 	}
 }
 
@@ -23,24 +87,17 @@ body{
 	margin:0px;
 	width:100%;
 }
-input,select:not(.number){
-	font-size:1.1em;
-}
-select.number{
-	font-size:0.75em;
-}
 select{
-	padding-left:0.2em;
-	padding-right:0.2em;
+	padding-left:0.2rem;
+	padding-right:0.2rem;
 }
 button{
 	cursor:pointer;
-	font-size:0.9em;
 	font-weight:bold;
 	color:#292929;
 	border-radius:8px;
-	padding-left:0.5em;
-	padding-right:0.5em;
+	padding-left:0.5rem;
+	padding-right:0.5rem;
 	box-shadow:1px 1px 1px #303030;
 }
 .number{
@@ -53,8 +110,7 @@ button{
 	align-items:center;
 	justify-content:center;
 }
-#loginForm{
-}
+
 /* 入力画面 */
 #inputContainer{
 	width:46vw;
@@ -65,7 +121,7 @@ button{
 	left:50%;
 	top:50%;
 	background-color:black;
-	padding:0.5em;
+	padding:0.5rem;
 	transform: translate(-50%,-50%);
 }
 .inputTable{
@@ -102,10 +158,6 @@ button{
 	border:2px solid gray;
 	text-align:center;
 }
-#rivalBtn,#pkgBtn{
-	font-size:0.8em;
-	height:1.8em;
-}
 #updContainer{
 	z-index:2;
 	display:none;
@@ -115,22 +167,8 @@ button{
 	padding:0.5rem;
 	border:2px solid gray;
 }
-/* 集計結果表示領域 */
-#summaryContainer{
-	font-size:0.9em;
-	width:17.5em;
-	margin-top:0.3em;
-}
 
 /* データ表示領域 */
-#dtContainer{
-	position:absolute;
-	overflow-y:scroll;
-	top:0;
-	margin-left:17em;
-	width:calc(100% - 17em);
-	height:100vh;
-}
 #dt{
 	border-collapse: separate;
     border-spacing: 0px 5px;
@@ -139,13 +177,13 @@ button{
 /* データ表示領域詳細 */
 .dataArea{
 	width:calc(100% - 2.2em);
-	margin-top:0.3em;
-	margin-left:2.15em;
-	font-size:1.2em;
+	margin-top:0.3erm;
+	margin-left:2.15rem;
+	font-size:1.2rem;
 }
 .title{
 	width:100%;
-	font-size:1.3em;
+	font-size:1.3rem;
 	background-color:rgba(32,32,32,0.5);
 	border:3px solid rgb(255,128,0);
 	border-radius:5px;
@@ -162,20 +200,20 @@ button{
 	font-weight:bold;
 	background-color:#C0C0C0;
 	border-radius:15px;
-	padding-left:0.3em;
-	padding-right:0.3em;
+	padding-left:0.3rem;
+	padding-right:0.3rem;
 	position:absolute;
 	top:3px;
-	left:-1.75em;
+	left:-1.75rem;
 	color:white;
-	font-size:0.8em;
+	font-size:0.8rem;
 }
 
 /* jumpボタン */
 #jumpBtn{
-	margin-left:0.2em;
-	padding-top:0.2em;
-	padding-bottom:0.2em;
+	margin-left:0.2rem;
+	padding-top:0.2rem;
+	padding-bottom:0.2rem;
 	height:28px;
 }
 
@@ -273,10 +311,10 @@ input[type="checkbox"]:checked+label::after{
 }
 .CN,.HCN,.NOCN{
 	font-family:"Kdam Thmor Pro";
-	margin-top:0.25em;
-	margin-bottom:0.25em;
-	padding-top:0.4em;
-	font-size:1.0em;
+	margin-top:0.25rem;
+	margin-bottom:0.25rem;
+	padding-top:0.4rem;
+	font-size:1.0rem;
 }
 /* ランプ表記 */
 .STAT{
