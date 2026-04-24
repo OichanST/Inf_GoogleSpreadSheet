@@ -26,11 +26,12 @@
 		top:0;
 		margin-left:0;
 		width:100%;
-		height:100vh;
+		height:97vh;
 	}
 	/* データ表示領域詳細 */
 	.bpmAndNotes{
 		font-size:0.6rem;
+		width:4rem;
 	}
 	.dataArea{
 		width:calc(100% - 2.2rem);
@@ -41,7 +42,7 @@
 	.detailArea{
 		font-size:0.8rem;
 	}
-	.title{
+	.titleArea{
 		width:100%;
 		font-size:0.9rem;
 		background-color:rgba(32,32,32,0.5);
@@ -49,6 +50,16 @@
 		border-radius:5px;
 		display:flex;
 		justify-content:flex-start;
+	}
+	.CN,.HCN,.NOCN{
+		font-family:"Kdam Thmor Pro";
+		margin-top:0.25rem;
+		margin-bottom:0.25rem;
+		padding-top:0.1rem;
+		font-size:0.6rem;
+	}
+	.DIFFICULT,.title{
+		padding-top:0px;
 	}
 	input,select:not(.number){
 		font-size:2.0rem;
@@ -59,6 +70,9 @@
 	#rivalBtn,#pkgBtn{
 		font-size:1.5rem;
 		height:2.4rem;
+	}
+	.mv{
+		height:25px;
 	}
 }
 
@@ -77,24 +91,25 @@
 		position:absolute;
 		overflow-y:scroll;
 		top:0;
-		margin-left:17rem;
-		width:calc(100% - 17rem);
+		margin-left:17.5rem;
+		width:calc(100% - 17.5rem);
 		height:100vh;
 	}
 	.bpmAndNotes{
 		font-size:0.9rem;
+		width:7rem;
 	}
 	/* データ表示領域詳細 */
 	.dataArea{
 		width:calc(100% - 2.2rem);
-		margin-top:0.3erm;
+		margin-top:0.3rem;
 		margin-left:2.15rem;
 		font-size:1.2rem;
 	}
 	.detailArea{
 		font-size:1.0rem;
 	}
-	.title{
+	.titleArea{
 		width:100%;
 		font-size:1.3rem;
 		background-color:rgba(32,32,32,0.5);
@@ -102,6 +117,16 @@
 		border-radius:5px;
 		display:flex;
 		justify-content:flex-start;
+	}
+	.CN,.HCN,.NOCN{
+		font-family:"Kdam Thmor Pro";
+		margin-top:0.25rem;
+		margin-bottom:0.25rem;
+		padding-top:0.4rem;
+		font-size:1.0rem;
+	}
+	.DIFFICULT,.title{
+		padding-top:0.2rem;
 	}
 	input,select:not(.number){
 		font-size:1.1rem;
@@ -112,6 +137,9 @@
 	#rivalBtn,#pkgBtn{
 		font-size:0.8rem;
 		height:1.8rem;
+	}
+	.mv{
+		height:55px;
 	}
 }
 
@@ -340,13 +368,6 @@ input[type="checkbox"]:checked+label::after{
 }
 .HCN{
 	background:linear-gradient(#FF0000 15%, rgba(0,0,0,0) 15% 85%, #FF0000 85%);
-}
-.CN,.HCN,.NOCN{
-	font-family:"Kdam Thmor Pro";
-	margin-top:0.25rem;
-	margin-bottom:0.25rem;
-	padding-top:0.4rem;
-	font-size:1.0rem;
 }
 /* ランプ表記 */
 .STAT{

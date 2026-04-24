@@ -465,31 +465,31 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 		<td>
 			<div>
 				<div style="display:flex;justify-content:flex-end;">
-					<div class="${cnClass}" style="text-align:center;width:2.5em;margin-left:0.25em;margin-right:0.25em;">
+					<div class="${cnClass}" style="text-align:center;width:2.5rem;margin-left:0.25rem;margin-right:0.25rem;">
 						${cnText}
 					</div>
-					<div class="title">
-						<div class="STAT TOP_${clearStatus} TOP_${rec.type}" style="width:0.7em;"></div>
-						<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;padding-top:0.2em;">${rec.DIFFICULT}</div>
-						<div style="padding-top:0.2em;${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
+					<div class="titleArea">
+						<div class="STAT TOP_${clearStatus} TOP_${rec.type}" style="width:0.7rem;"></div>
+						<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;">${rec.DIFFICULT}</div>
+						<div class="title" style="${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
 					</div>
-					<div class="bpmAndNotes" style="width:7em;margin-left:0.3em;${rec.OPEN ? "" : "color:gray;"}">
+					<div class="bpmAndNotes" style="margin-left:0.3rem;padding-right:0.5rem;${rec.OPEN ? "" : "color:gray;"}">
 						<div style="display:flex;justify-content:flex-start;">
-							<div class="number" style="width:2em;">BPM</div>
-							<div class="number" style="width:5em;text-align:right;">${rec.BPM}</div>
+							<div class="number" style="width:2rem;">BPM</div>
+							<div class="number" style="width:5rem;text-align:right;">${rec.BPM}</div>
 						</div>
 						<div style="display:flex;justify-content:flex-start;">
-							<div class="number" style="width:3em;">NOTES</div>
-							<div class="number" style="width:4em;text-align:right;">${rec.NOTES}</div>
+							<div class="number" style="width:3rem;">NOTES</div>
+							<div class="number" style="width:4rem;text-align:right;">${rec.NOTES}</div>
 						</div>
 					</div>
-					<div style="width:5em;text-align:center;">
+					<div style="text-align:center;">
 	`;
 	// 動画URL指定がある場合
 	if(rec.MV){
 		// アイコンリンクを追加
 		htmlString += `
-						<img src="mv.png" height="44px" onclick="sendMV('${rec.MV}');"/>
+						<img src="mv.png" class="mv" onclick="sendMV('${rec.MV}');"/>
 		`;
 	}
 	// データエリア追加
