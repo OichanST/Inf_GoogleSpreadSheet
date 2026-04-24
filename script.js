@@ -473,7 +473,7 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 						<div class="DIFFICULT DIF_${rec.type}" style="width:1.8em;">${rec.DIFFICULT}</div>
 						<div class="title" style="${rec.OPEN ? "" : "color:gray;"}">${rec.TITLE}</div>
 					</div>
-					<div class="bpmAndNotes" style="margin-left:0.3rem;padding-right:0.5rem;${rec.OPEN ? "" : "color:gray;"}">
+					<div class="bpmAndNotes" style="margin-left:0.3rem;${rec.OPEN ? "" : "color:gray;"}">
 						<div style="display:flex;justify-content:flex-start;">
 							<div class="number" style="width:2rem;">BPM</div>
 							<div class="number" style="width:5rem;text-align:right;">${rec.BPM}</div>
@@ -483,7 +483,7 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 							<div class="number" style="width:4rem;text-align:right;">${rec.NOTES}</div>
 						</div>
 					</div>
-					<div style="text-align:center;">
+					<div class="mvArea" style="text-align:right;">
 	`;
 	// 動画URL指定がある場合
 	if(rec.MV){
