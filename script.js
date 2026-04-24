@@ -475,12 +475,12 @@ function renderRow(spdp, rec, rivals, rivalsWinLose){
 					</div>
 					<div class="bpmAndNotes" style="margin-left:0.3rem;${rec.OPEN ? "" : "color:gray;"}">
 						<div style="display:flex;justify-content:flex-start;">
-							<div class="number" style="width:2rem;">BPM</div>
-							<div class="number" style="width:5rem;text-align:right;">${rec.BPM}</div>
+							<div class="bpmTitle number">BPM</div>
+							<div class="bpm number" style="text-align:right;">${rec.BPM}</div>
 						</div>
 						<div style="display:flex;justify-content:flex-start;">
-							<div class="number" style="width:3rem;">NOTES</div>
-							<div class="number" style="width:4rem;text-align:right;">${rec.NOTES}</div>
+							<div class="notesTitle number">NOTES</div>
+							<div class="notes number" style="text-align:right;">${rec.NOTES}</div>
 						</div>
 					</div>
 					<div class="mvArea" style="text-align:right;">
