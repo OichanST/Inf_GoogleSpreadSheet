@@ -6,6 +6,8 @@ let displayData;
 let clearStatusFilter = null;
 // プレイ結果フィルタ
 let playResultFilter = null;
+
+let chartData = {};
 // Google Spread Sheetデータ取得用のAPIのURL
 const gsendpoint = "https://script.google.com/macros/s/AKfycbxIaQ6fbvHINLb4pdBMsrXVcWnpeRGsa9jqwUXQNtKQWNh_SbA5kTHUQ1o7_NvpMGF4Hg/exec";
 
@@ -626,9 +628,10 @@ function summary(rivalsWinLose){
 	// 現在表示している曲数を表示
 	setText("total", displayData.length);
 	
-	clear("rivalsWinLose");
-	
 	if(rivalsWinLose){
+	
+		clear("rivalsWinLose");
+		
 		for(let rival in rivalsWinLose){
 			setHtml("rivalsWinLose",
 				`<div style="font-size:0.9rem;">
@@ -738,6 +741,157 @@ function summary(rivalsWinLose){
 	setText("dCnt", dCnt);
 	setText("eCnt", eCnt);
 	setText("fCnt", fCnt);
+	
+	chartData = {
+		NoOpen : notOpenCnt,
+		NoPlay : noPlayCnt,
+		Failed : failedCnt,
+		Assist : assistClearCnt,
+		Easy : easyClearCnt,
+		Clear : clearCnt,
+		Hard : hardClearCnt,
+		EXH : exhClearCnt,
+		FullCombo : fullComboCnt,
+		AAA : aaaCnt,
+		AA : aaCnt,
+		A : aCnt,
+		B : bCnt,
+		C : cCnt,
+		D : dCnt,
+		E : eCnt,
+		F : fCnt
+	}
+}
+
+function drawChart(chartType){
+	
+	const exChart = Chart.getChart("chart");
+	
+	if(exChart){
+		exChart.destroy();
+	}
+	
+	const ctx = document.getElementById("chart").getContext("2d");
+	
+	
+	const parts = {
+		labels:null,
+		data:null,
+		bg:null
+	};
+	
+	if(chartType == "clear"){
+		parts.labels = [
+			"未解禁",
+			"NO PLAY",
+			"FAILED",
+			"ASSIST CLEAR",
+			"EASY ELEAR",
+			"CLEAR",
+			"HARD CLEAR",
+			"EX HARD CLEAR",
+			"FULL COMBO"
+		];
+		parts.data = [
+			chartData.NoOpen,
+			chartData.NoPlay,
+			chartData.Failed,
+			chartData.Assist,
+			chartData.Easy,
+			chartData.Clear,
+			chartData.Hard,
+			chartData.EXH,
+			chartData.FullCombo
+		];
+		parts.bg = [
+			"#606060",
+			"#C0C0C0",
+			"#C00000",
+			"#FF00FF",
+			"#00FF00",
+			"#00FFC0",
+			"#FF0000",
+			"#FFE000",
+			"white"
+		];
+	}else if(chartType == "score"){
+		parts.labels = [
+			"AAA",
+			"AA",
+			"A",
+			"B～F"
+		];
+		parts.data = [
+			chartData.AAA,
+			chartData.AA,
+			chartData.A,
+			chartData.B +
+			chartData.C +
+			chartData.D +
+			chartData.E +
+			chartData.F
+		];
+		parts.bg = [
+			"#FFCC00",
+			"#E0E0E0",
+			"#00FFC0",
+			"#606060"
+		];
+	}
+	
+	const config = {
+		type:"pie",
+		data:{
+			labels:parts.labels,
+			datasets:[{
+				data:parts.data,
+				backgroundColor:parts.bg,
+				borderWidth:1
+			}]
+		},
+		plugins: [
+			ChartDataLabels,
+		],
+		options:{
+			responsive:true,
+			maintainAspectRatio:false,
+			layout:{
+				padding:{
+					top:10,
+					left:20,
+					right:20,
+					bottom:10
+				}
+			},
+			plugins:{
+				legend:{
+					position:"left",
+					labels:{
+						color:"#FFFFFF",
+						font:{
+							weight:"bold",
+							size:10
+						}
+					}
+				},
+				datalabels:{
+					color:"#FFFFFF",
+					font:{
+						weight:"bold",
+						size:14
+					},
+					formatter:(value) => {
+						if(value == 0)return null;
+						return value + "(" + String(value / displayData.length * 100).substring(0, 5) + "%)";
+					}
+				}
+			}
+		}
+	}
+	
+	const drowChart = new Chart(ctx, config);
+	
+	document.getElementById('chartContainer').style.display = 'flex';
 }
 
 /**
