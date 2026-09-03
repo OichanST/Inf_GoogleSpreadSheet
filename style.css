@@ -26,12 +26,9 @@
 		top:0;
 		margin-left:0;
 		width:100%;
-		height:100vh;
+		height:94vh;
 	}
 	/* データ表示領域詳細 */
-	.bpmAndNotes{
-		font-size:0.6rem;
-	}
 	.dataArea{
 		width:calc(100% - 2.2rem);
 		margin-top:0.3erm;
@@ -41,7 +38,7 @@
 	.detailArea{
 		font-size:0.8rem;
 	}
-	.title{
+	.titleArea{
 		width:100%;
 		font-size:0.9rem;
 		background-color:rgba(32,32,32,0.5);
@@ -50,15 +47,40 @@
 		display:flex;
 		justify-content:flex-start;
 	}
+	.CN,.HCN,.NOCN{
+		font-family:"Kdam Thmor Pro";
+		margin-top:0.25rem;
+		margin-bottom:0.25rem;
+		padding-top:0.2rem;
+		font-size:0.7rem;
+	}
+	.DIFFICULT,.title{
+		padding-top:0.1rem;
+		padding-bottom:0.1rem;
+	}
+	.bpmAndNotes{
+		font-size:0.65rem;
+		width:4rem;
+	}
+	.bpmTitle{width:1.75rem;}
+	.bpm{width:2.25rem;}
+	.notesTitle{width:2.25rem;}
+	.notes{width:1.75rem;}
 	input,select:not(.number){
-		font-size:2.0rem;
+		font-size:1.7rem;
 	}
 	select.number{
 		font-size:1.5rem;
 	}
 	#rivalBtn,#pkgBtn{
-		font-size:1.5rem;
+		font-size:1.4rem;
 		height:2.4rem;
+	}
+	.mvArea{
+		width:3.5rem;
+	}
+	.mv{
+		height:1.3rem;
 	}
 }
 
@@ -77,24 +99,21 @@
 		position:absolute;
 		overflow-y:scroll;
 		top:0;
-		margin-left:17rem;
-		width:calc(100% - 17rem);
+		margin-left:17.5rem;
+		width:calc(100% - 17.5rem);
 		height:100vh;
-	}
-	.bpmAndNotes{
-		font-size:0.9rem;
 	}
 	/* データ表示領域詳細 */
 	.dataArea{
 		width:calc(100% - 2.2rem);
-		margin-top:0.3erm;
+		margin-top:0.3rem;
 		margin-left:2.15rem;
 		font-size:1.2rem;
 	}
 	.detailArea{
 		font-size:1.0rem;
 	}
-	.title{
+	.titleArea{
 		width:100%;
 		font-size:1.3rem;
 		background-color:rgba(32,32,32,0.5);
@@ -103,6 +122,24 @@
 		display:flex;
 		justify-content:flex-start;
 	}
+	.CN,.HCN,.NOCN{
+		font-family:"Kdam Thmor Pro";
+		margin-top:0.25rem;
+		margin-bottom:0.25rem;
+		padding-top:0.4rem;
+		font-size:1.0rem;
+	}
+	.DIFFICULT,.title{
+		padding-top:0.2rem;
+	}
+	.bpmAndNotes{
+		font-size:0.9rem;
+		width:7rem;
+	}
+	.bpmTitle{width:2rem}
+	.bpm{width:5rem;}
+	.notesTitle{width:3rem}
+	.notes{width:4rem}
 	input,select:not(.number){
 		font-size:1.1rem;
 	}
@@ -110,8 +147,14 @@
 		font-size:0.75rem;
 	}
 	#rivalBtn,#pkgBtn{
-		font-size:0.8rem;
-		height:1.8rem;
+		font-size:0.75rem;
+		height:1.4rem;
+	}
+	.mvArea{
+		width:4.5rem;
+	}
+	.mv{
+		height:55px;
 	}
 }
 
@@ -340,13 +383,6 @@ input[type="checkbox"]:checked+label::after{
 }
 .HCN{
 	background:linear-gradient(#FF0000 15%, rgba(0,0,0,0) 15% 85%, #FF0000 85%);
-}
-.CN,.HCN,.NOCN{
-	font-family:"Kdam Thmor Pro";
-	margin-top:0.25rem;
-	margin-bottom:0.25rem;
-	padding-top:0.4rem;
-	font-size:1.0rem;
 }
 /* ランプ表記 */
 .STAT{

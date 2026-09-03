@@ -62,11 +62,11 @@ function swipe(){
 	
 	console.log(diffX);
 
-	if(diffX > 200){
+	if(diffX > 150){
 		hide("menuContainer");
 	}
 
-	if(diffX < -200){
+	if(diffX < -150){
 		show("menuContainer");
 	}
 
